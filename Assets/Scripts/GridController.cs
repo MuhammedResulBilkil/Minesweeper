@@ -52,7 +52,13 @@ public class GridController : MonoBehaviour
         }
     }
 
-    private void Update()
+    private void Start()
+    {
+        for (int i = 0; i < _totalCells.Count; i++)
+            CountMines(_totalCells[i]);
+    }
+
+    /*private void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
@@ -65,12 +71,38 @@ public class GridController : MonoBehaviour
                 }
             }
         }
-    }
+    }*/
 
     public void ShowDebugLines()
     {
         for (int i = 0; i < grids.Count; i++)
             grids[i].DrawDebugLines();
+    }
+
+    private void CountMines(Cell cell)
+    {
+        if(cell.GetCellType() == CellType.Mine) return;
+
+        int totalNeighbour = 0;
+
+        for (int xOff = -1; xOff <=1; xOff++)
+        {
+            for (int yOff = -1; yOff <=1; yOff++)
+            {
+                int i = cell.gridIndexX + xOff;
+                int j = cell.gridIndexY + yOff;
+
+                if (i > -1 && i < _nestedCells.GetLength(0) && j > -1 && j < _nestedCells.GetLength(1))
+                {
+                    Cell neighbourCell = _nestedCells[i, j];
+                
+                    if(neighbourCell.GetCellType() == CellType.Mine)
+                        totalNeighbour++;
+                }
+            }
+        }
+
+        cell.ShowNeighbours(totalNeighbour);
     }
 
     #region ShuffleList

@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -8,15 +9,14 @@ public enum CellType
     Mine
 }
 
-[Serializable]
 public class Cell : MonoBehaviour
 {
     public int gridIndexX;
     public int gridIndexY;
     
-    [SerializeField] private Material _cellMaterial;
-    [SerializeField] CellType _cellType;
-    [SerializeField] private bool _revealed;
+    [SerializeField] private CellType _cellType;
+    [SerializeField] private TextMeshProUGUI _cellText;
+    [SerializeField] private int _neighbourCount;
 
     private MeshRenderer _meshRenderer;
     private Material _copiedCellMaterial;
@@ -27,12 +27,18 @@ public class Cell : MonoBehaviour
         _copiedCellMaterial = _meshRenderer.material;
 
         _cellType = Random.value > 0.5f ? CellType.Empty : CellType.Mine;
+        _copiedCellMaterial.color = _cellType == CellType.Empty ? Color.green : Color.red;
     }
 
-    public void Reveal()
+    public void ShowNeighbours(int neighbourCount)
     {
-        _revealed = true;
+        _neighbourCount = neighbourCount;
+        
+        _cellText.text = _neighbourCount.ToString();
+    }
 
-        _copiedCellMaterial.color = _cellType == CellType.Empty ? Color.green : Color.red;
+    public CellType GetCellType()
+    {
+        return _cellType;
     }
 }
