@@ -13,7 +13,8 @@ public class GridController : MonoBehaviour
     public List<MinesweeperGrid> grids = new List<MinesweeperGrid>();
 
     private Camera _camera;
-    private List<Cell> _cells = new List<Cell>();
+    private Cell[,] _nestedCells; 
+    private List<Cell> _totalCells = new List<Cell>();
 
     private void Awake()
     {
@@ -22,14 +23,33 @@ public class GridController : MonoBehaviour
         _camera = Camera.main;
 
         for (int i = 0; i < platforms.Count; i++)
-            grids[i].CreateGrid();
-
-        for (int i = 0; i < grids[0].gridCenterPoses.Count; i++)
         {
-           GameObject go = Instantiate(cellPrefab, grids[0].gridCenterPoses[i], Quaternion.identity, cellsParent);
-           _cells.Add(go.GetComponent<Cell>());
+            grids[i].CreateGrid();
+            _nestedCells = new Cell[grids[i].width, grids[i].width];
         }
-           
+        
+        for (int i = 0; i < grids.Count; i++)
+        {
+            for (int j = 0; j < grids[i].gridCenterPoses.Count; j++)
+            {
+                GameObject go = Instantiate(cellPrefab, grids[i].gridCenterPoses[j], Quaternion.identity, cellsParent);
+                _totalCells.Add(go.GetComponent<Cell>());
+            }
+        }
+
+        int k = 0;
+        
+        for (int i = 0; i < _nestedCells.GetLength(0); i++)
+        {
+            for (int j = 0; j < _nestedCells.GetLength(1); j++)
+            {
+                _nestedCells[i, j] = _totalCells[k];
+                _nestedCells[i, j].gridIndexX = i;
+                _nestedCells[i, j].gridIndexY = j;
+                
+                k++;
+            }
+        }
     }
 
     private void Update()

@@ -8,8 +8,12 @@ public enum CellType
     Mine
 }
 
+[Serializable]
 public class Cell : MonoBehaviour
 {
+    public int gridIndexX;
+    public int gridIndexY;
+    
     [SerializeField] private Material _cellMaterial;
     [SerializeField] CellType _cellType;
     [SerializeField] private bool _revealed;
