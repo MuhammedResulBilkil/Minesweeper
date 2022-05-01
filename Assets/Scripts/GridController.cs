@@ -1,17 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 
 public class GridController : MonoBehaviour
 {
     public static GridController Instance { get; private set; }
 
+    [SerializeField] private int _totalMinesCount;
+    
+    public bool isGameOver;
+    
     public GameObject cellPrefab;
     public Transform cellsParent;
     public List<GameObject> platforms = new List<GameObject>();
     public List<MinesweeperGrid> grids = new List<MinesweeperGrid>();
-
+    
     private Camera _camera;
     private Cell[,] _nestedCells; 
     private List<Cell> _totalCells = new List<Cell>();
@@ -50,16 +54,36 @@ public class GridController : MonoBehaviour
                 k++;
             }
         }
+
+        // Pick Total Mines Spots
+        for (int n = 0; n < _totalMinesCount; n++)
+        {
+            int i = Mathf.FloorToInt(Random.Range(0f, _nestedCells.GetLength(0)));
+            int j = Mathf.FloorToInt(Random.Range(0f, _nestedCells.GetLength(1)));
+            
+            if (_nestedCells[i, j].GetCellType() == CellType.Mine)
+            {
+                n--;
+                continue;
+            }
+            
+            _nestedCells[i, j].SetCellType(CellType.Mine);
+        }
     }
 
     private void Start()
     {
         for (int i = 0; i < _totalCells.Count; i++)
+        {
+            _totalCells[i].SetGridXY(_nestedCells.GetLength(0), _nestedCells.GetLength(1));
             CountMines(_totalCells[i]);
+        }
     }
 
-    /*private void Update()
+    private void Update()
     {
+        if(isGameOver) return;
+        
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
@@ -67,11 +91,22 @@ public class GridController : MonoBehaviour
             {
                 if (hitInfo.transform.TryGetComponent(out Cell cell))
                 {
-                    cell.Reveal();
+                    if(cell.GetCellType() != CellType.Revealed)
+                        cell.Reveal();
                 }
             }
         }
-    }*/
+    }
+
+    public void GameOver()
+    {
+        Debug.Log("Game Over!!!");
+        
+        for (int i = 0; i < _totalCells.Count; i++)
+            _totalCells[i].ShowCell();
+        
+        isGameOver = true;
+    }
 
     public void ShowDebugLines()
     {
@@ -79,9 +114,40 @@ public class GridController : MonoBehaviour
             grids[i].DrawDebugLines();
     }
 
+    public void CreateNewMinesweeperEditMode()
+    {
+        isGameOver = false;
+        
+        for (int i = 0; i < _totalCells.Count; i++)
+            DestroyImmediate(_totalCells[i].gameObject);
+
+        grids[0].gridCenterPoses.Clear();
+        _nestedCells = new Cell[grids[0].width, grids[0].height];
+        _totalCells.Clear();
+        
+        Awake();
+        Start();
+    }
+
+    public void ClearMinesweeperEditMode()
+    {
+        isGameOver = false;
+        
+        for (int i = 0; i < _totalCells.Count; i++)
+            DestroyImmediate(_totalCells[i].gameObject);
+
+        grids[0].gridCenterPoses.Clear();
+        _nestedCells = new Cell[grids[0].width, grids[0].height];
+        _totalCells.Clear();
+    }
+
     private void CountMines(Cell cell)
     {
-        if(cell.GetCellType() == CellType.Mine) return;
+        if (cell.GetCellType() == CellType.Mine)
+        {
+            cell.SetNeighbourCount(-1);
+            return;
+        }
 
         int totalNeighbour = 0;
 
@@ -102,7 +168,13 @@ public class GridController : MonoBehaviour
             }
         }
 
-        cell.ShowNeighbours(totalNeighbour);
+        cell.SetNeighbourCount(totalNeighbour);
+        //cell.ShowNeighbours(totalNeighbour);
+    }
+
+    public Cell GetCellByIndex(int gridX, int gridY)
+    {
+        return _nestedCells[gridX, gridY];
     }
 
     #region ShuffleList
@@ -116,7 +188,7 @@ public class GridController : MonoBehaviour
  
     public static void ShuffleList<T> (ref List<T> aList) {
  
-        Random randomValue = new Random ();
+        System.Random randomValue = new System.Random ();
  
         var myGO = default(T);
  
