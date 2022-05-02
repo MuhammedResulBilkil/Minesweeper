@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -10,6 +11,8 @@ public class GridController : MonoBehaviour
     [SerializeField] private int _totalMinesCount;
     
     public bool isGameOver;
+    public bool isFirstTimeClicked;
+    public bool isFirstTimeNoNeighbour;
     
     public GameObject cellPrefab;
     public Transform cellsParent;
@@ -23,6 +26,8 @@ public class GridController : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        
+        //DOTween.SetTweensCapacity(20000, 20);
         
         _camera = Camera.main;
 
@@ -82,6 +87,12 @@ public class GridController : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            ClearMinesweeperEditMode();
+            CreateNewMinesweeperEditMode();
+        }
+
         if(isGameOver) return;
         
         if (Input.GetMouseButtonDown(0))
@@ -92,7 +103,7 @@ public class GridController : MonoBehaviour
                 if (hitInfo.transform.TryGetComponent(out Cell cell))
                 {
                     if(cell.GetCellType() != CellType.Revealed)
-                        cell.Reveal();
+                        StartCoroutine(cell.Reveal());
                 }
             }
         }
@@ -117,6 +128,8 @@ public class GridController : MonoBehaviour
     public void CreateNewMinesweeperEditMode()
     {
         isGameOver = false;
+        isFirstTimeClicked = false;
+        isFirstTimeNoNeighbour = false;
         
         for (int i = 0; i < _totalCells.Count; i++)
             DestroyImmediate(_totalCells[i].gameObject);
@@ -132,6 +145,8 @@ public class GridController : MonoBehaviour
     public void ClearMinesweeperEditMode()
     {
         isGameOver = false;
+        isFirstTimeClicked = false;
+        isFirstTimeNoNeighbour = false;
         
         for (int i = 0; i < _totalCells.Count; i++)
             DestroyImmediate(_totalCells[i].gameObject);
