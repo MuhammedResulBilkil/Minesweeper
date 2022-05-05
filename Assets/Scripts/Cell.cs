@@ -20,6 +20,7 @@ public class Cell : MonoBehaviour
 
     [SerializeField] private CellType _cellType;
     [SerializeField] private TextMeshProUGUI _cellText;
+    [SerializeField] private GameObject _mineSpriteGameObject;
     [SerializeField] private int _neighbourCount;
 
     private MeshRenderer _meshRenderer;
@@ -64,6 +65,7 @@ public class Cell : MonoBehaviour
                 break;
             case CellType.Mine:
                 _copiedCellMaterial.color = Color.red;
+                _mineSpriteGameObject.SetActive(true);
                 break;
             case CellType.Revealed:
                 if (_neighbourCount == 0)
@@ -81,8 +83,8 @@ public class Cell : MonoBehaviour
         {
             _copiedCellMaterial.color = Color.red;
 
-            if (!GridController.Instance.isGameOver)
-                GridController.Instance.GameOver();
+            if (!GameController.Instance.isGameOver)
+                GameController.Instance.GameOver();
 
             yield break;
         }
@@ -90,8 +92,8 @@ public class Cell : MonoBehaviour
         if (_cellType == CellType.Empty && _neighbourCount != 0)
         {
             
-            if (!GridController.Instance.isFirstTimeClicked)
-                GridController.Instance.isFirstTimeClicked = true;
+            if (!GameController.Instance.isFirstTimeClicked)
+                GameController.Instance.isFirstTimeClicked = true;
                 
             _cellType = CellType.Revealed;
 
@@ -113,10 +115,10 @@ public class Cell : MonoBehaviour
 
         if (_neighbourCount == 0)
         {
-            if (!GridController.Instance.isFirstTimeClicked || !GridController.Instance.isFirstTimeNoNeighbour)
+            if (!GameController.Instance.isFirstTimeClicked || !GameController.Instance.isFirstTimeNoNeighbour)
             {
-                GridController.Instance.isFirstTimeClicked = true;
-                GridController.Instance.isFirstTimeNoNeighbour = true;
+                GameController.Instance.isFirstTimeClicked = true;
+                GameController.Instance.isFirstTimeNoNeighbour = true;
                 
                 if(!DOTween.IsTweening(_randomMoveZTweenID))
                     transform.DOLocalMoveZ(-1f, 0.1f).SetEase(Ease.InOutSine).SetLoops(2, LoopType.Yoyo).SetId(_randomMoveZTweenID);
@@ -143,7 +145,7 @@ public class Cell : MonoBehaviour
                 
                 if (i > -1 && i < _gridX && j > -1 && j < _gridY)
                 {
-                    Cell neighbour = GridController.Instance.GetCellByIndex(i, j);
+                    Cell neighbour = GameController.Instance.GetCellByIndex(i, j);
                     
                     if (neighbour.GetCellType() != CellType.Mine && neighbour.GetCellType() != CellType.Revealed)
                     {

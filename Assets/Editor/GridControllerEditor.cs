@@ -2,14 +2,14 @@
 using UnityEngine;
 
 
-[CustomEditor(typeof(GridController))]
+[CustomEditor(typeof(GameController))]
 public class GridControllerEditor : Editor
 {
     public override void OnInspectorGUI()
     {
         base.OnInspectorGUI();
 
-        GridController myTarget = (GridController)target;
+        GameController myTarget = (GameController)target;
 
         if (GUILayout.Button("Draw Debug Lines", GUILayout.Height(100)))
         {
