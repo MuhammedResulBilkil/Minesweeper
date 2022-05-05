@@ -33,6 +33,7 @@ public class Cell : MonoBehaviour
     private bool _isMoveZTweenStarted;
     private bool _isTotalEmptyCellsDecreased;
     private bool _isMarkOn;
+    private bool _isRevealedOnce;
 
     private void Awake()
     {
@@ -133,10 +134,11 @@ public class Cell : MonoBehaviour
         
         if (_neighbourCount == 0)
         {
-            if (!GameController.Instance.isFirstTimeClicked || !GameController.Instance.isFirstTimeNoNeighbour)
+            if (!GameController.Instance.isFirstTimeClicked || !GameController.Instance.isFirstTimeNoNeighbour || !_isRevealedOnce)
             {
                 GameController.Instance.isFirstTimeClicked = true;
                 GameController.Instance.isFirstTimeNoNeighbour = true;
+                _isRevealedOnce = true;
                 
                 if(!DOTween.IsTweening(_randomMoveZTweenID))
                     transform.DOLocalMoveZ(-1f, 0.1f).SetEase(Ease.InOutSine).SetLoops(2, LoopType.Yoyo).SetId(_randomMoveZTweenID);
