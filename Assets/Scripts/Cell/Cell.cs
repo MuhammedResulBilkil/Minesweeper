@@ -21,15 +21,18 @@ public class Cell : MonoBehaviour
     [SerializeField] private CellType _cellType;
     [SerializeField] private TextMeshProUGUI _cellText;
     [SerializeField] private GameObject _mineSpriteGameObject;
+    [SerializeField] private GameObject _flagGameObject;
     [SerializeField] private int _neighbourCount;
 
-    private MeshRenderer _meshRenderer;
+    private MeshRenderer _meshRenderer; 
     private Material _copiedCellMaterial;
     private WaitForSeconds _waitForSecondsMoveZTween = new WaitForSeconds(0.05f);
     private int _gridX;
     private int _gridY;
     private int _randomMoveZTweenID;
     private bool _isMoveZTweenStarted;
+    private bool _isTotalEmptyCellsDecreased;
+    private bool _isMarkOn;
 
     private void Awake()
     {
@@ -38,17 +41,9 @@ public class Cell : MonoBehaviour
         _meshRenderer.sharedMaterial = _copiedCellMaterial;
 
         _randomMoveZTweenID = Random.Range(0, 10000);
-
-        //_cellType = Random.value > 0.5f ? CellType.Empty : CellType.Mine;
-        //_copiedCellMaterial.color = _cellType == CellType.Empty ? Color.green : Color.red;
     }
 
-    private void Start()
-    {
-        //_copiedCellMaterial.color = _cellType == CellType.Empty ? Color.green : Color.red;
-    }
-
-    public void ShowNeighbours()
+    private void ShowNeighbours()
     {
         if (_neighbourCount > 0)
             _cellText.text = _neighbourCount.ToString();
@@ -60,14 +55,22 @@ public class Cell : MonoBehaviour
         {
             case CellType.Empty:
                 _copiedCellMaterial.color = Color.green;
+                _flagGameObject.SetActive(false);
                 if (_neighbourCount != 0)
                     ShowNeighbours();
                 break;
             case CellType.Mine:
-                _copiedCellMaterial.color = Color.red;
-                _mineSpriteGameObject.SetActive(true);
+                //_copiedCellMaterial.color = Color.red;
+                if (GameController.Instance.GetIsPlayerWin())
+                    _flagGameObject.SetActive(true);
+                else
+                {
+                    _mineSpriteGameObject.SetActive(true);
+                    _copiedCellMaterial.color = Color.red;
+                }
                 break;
             case CellType.Revealed:
+                _flagGameObject.SetActive(false);
                 if (_neighbourCount == 0)
                     _copiedCellMaterial.color = Color.green;
                 break;
@@ -77,6 +80,12 @@ public class Cell : MonoBehaviour
         }
     }
 
+    public void ShowMark()
+    {
+        _isMarkOn = !_isMarkOn;
+        _flagGameObject.SetActive(_isMarkOn);
+    }
+
     public IEnumerator Reveal()
     {
         if (_cellType == CellType.Mine)
@@ -84,7 +93,7 @@ public class Cell : MonoBehaviour
             _copiedCellMaterial.color = Color.red;
 
             if (!GameController.Instance.isGameOver)
-                GameController.Instance.GameOver();
+                GameController.Instance.PlayerLost();
 
             yield break;
         }
@@ -113,6 +122,15 @@ public class Cell : MonoBehaviour
 
         _cellType = CellType.Revealed;
 
+        if (!_isTotalEmptyCellsDecreased)
+        {
+            GameController.Instance.DecreaseTotalEmptyCellsCount();
+            GameController.Instance.CheckIsGameEnd();
+
+            _isTotalEmptyCellsDecreased = true;
+            _flagGameObject.SetActive(false);
+        }
+        
         if (_neighbourCount == 0)
         {
             if (!GameController.Instance.isFirstTimeClicked || !GameController.Instance.isFirstTimeNoNeighbour)

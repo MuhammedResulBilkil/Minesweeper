@@ -23,6 +23,8 @@ public class GameController : MonoBehaviour
     public List<MinesweeperGrid> grids = new List<MinesweeperGrid>();
 
     private float _cameraDistance = -10f;
+    private int _totalEmptyCells = 0;
+    private bool _isPlayerWin;
     private Cell[,] _nestedCells; 
     private List<Cell> _totalCells = new List<Cell>();
 
@@ -31,6 +33,11 @@ public class GameController : MonoBehaviour
         Instance = this;
         
         //DOTween.SetTweensCapacity(20000, 20);
+
+        grids[0].gridCenterPoses.Clear();
+
+        for (int i = 0; i < cellsParent.childCount; i++)
+            Destroy(cellsParent.GetChild(i).gameObject);
 
         for (int i = 0; i < platforms.Count; i++)
         {
@@ -61,6 +68,8 @@ public class GameController : MonoBehaviour
             }
         }
 
+        _totalEmptyCells = _totalCells.Count;
+
         // Pick Total Mines Spots
         for (int n = 0; n < _totalMinesCount; n++)
         {
@@ -74,6 +83,7 @@ public class GameController : MonoBehaviour
             }
             
             _nestedCells[i, j].SetCellType(CellType.Mine);
+            _totalEmptyCells--;
         }
     }
 
@@ -115,16 +125,44 @@ public class GameController : MonoBehaviour
                 }
             }
         }
+        else if (Input.GetMouseButtonDown(1))
+        {
+            Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hitInfo, 100f))
+            {
+                if (hitInfo.transform.TryGetComponent(out Cell cell))
+                {
+                    if(cell.GetCellType() != CellType.Revealed)
+                        cell.ShowMark();
+                }
+            }
+        }
     }
 
-    public void GameOver()
+    public void PlayerLost()
     {
-        Debug.Log("Game Over!!!");
+        isGameOver = true;
+        _isPlayerWin = false;
+        
+        Debug.Log("Player Lost!!!");
+        
+        UIController.Instance.ShowGameLoseText();
         
         for (int i = 0; i < _totalCells.Count; i++)
             _totalCells[i].ShowCell();
-        
+    }
+
+    private void PlayerWins()
+    {
         isGameOver = true;
+        _isPlayerWin = true;
+        
+        Debug.Log("Player Won!!!");
+        
+        UIController.Instance.ShowGameWinText();
+        
+        for (int i = 0; i < _totalCells.Count; i++)
+            _totalCells[i].ShowCell();
     }
 
     public void ShowDebugLines()
@@ -139,8 +177,16 @@ public class GameController : MonoBehaviour
         isFirstTimeClicked = false;
         isFirstTimeNoNeighbour = false;
         
-        for (int i = 0; i < _totalCells.Count; i++)
-            DestroyImmediate(_totalCells[i].gameObject);
+        if (Application.isPlaying)
+        {
+            for (int i = 0; i < cellsParent.childCount; i++)
+                Destroy(cellsParent.GetChild(i).gameObject);
+        }
+        else
+        {
+            while (cellsParent.childCount != 0)
+                DestroyImmediate(cellsParent.GetChild(0).gameObject);
+        }
 
         grids[0].gridCenterPoses.Clear();
         _nestedCells = new Cell[grids[0].width, grids[0].height];
@@ -155,9 +201,17 @@ public class GameController : MonoBehaviour
         isGameOver = false;
         isFirstTimeClicked = false;
         isFirstTimeNoNeighbour = false;
-        
-        for (int i = 0; i < _totalCells.Count; i++)
-            DestroyImmediate(_totalCells[i].gameObject);
+
+        if (Application.isPlaying)
+        {
+            for (int i = 0; i < cellsParent.childCount; i++)
+                Destroy(cellsParent.GetChild(i).gameObject);
+        }
+        else
+        {
+            while (cellsParent.childCount != 0)
+                DestroyImmediate(cellsParent.GetChild(0).gameObject);
+        }
 
         grids[0].gridCenterPoses.Clear();
         _nestedCells = new Cell[grids[0].width, grids[0].height];
@@ -195,6 +249,12 @@ public class GameController : MonoBehaviour
         //cell.ShowNeighbours(totalNeighbour);
     }
 
+    public void CheckIsGameEnd()
+    {
+        if(_totalEmptyCells == 0)
+            PlayerWins();
+    }
+
     public void ChangeGridWidthHeight(string gridWidthHeight)
     {
         int gridValue = int.Parse(gridWidthHeight);
@@ -219,6 +279,16 @@ public class GameController : MonoBehaviour
     public Cell GetCellByIndex(int gridX, int gridY)
     {
         return _nestedCells[gridX, gridY];
+    }
+
+    public void DecreaseTotalEmptyCellsCount()
+    {
+        _totalEmptyCells--;
+    }
+
+    public bool GetIsPlayerWin()
+    {
+        return _isPlayerWin;
     }
 
     #region ShuffleList

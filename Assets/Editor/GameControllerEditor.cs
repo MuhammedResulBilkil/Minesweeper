@@ -3,7 +3,7 @@ using UnityEngine;
 
 
 [CustomEditor(typeof(GameController))]
-public class GridControllerEditor : Editor
+public class GameControllerEditor : Editor
 {
     public override void OnInspectorGUI()
     {
