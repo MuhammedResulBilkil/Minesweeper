@@ -1,3 +1,3 @@
 # Minesweeper
  
-![Minesweeper_Gameplay] Recordingsss/Minesweeper_Gameplay.gif
+![Minesweeper_Gameplay] (https://github.com/MuhammedResulBilkil/Minesweeper/blob/master/Recordingsss/Minesweeper_Gameplay.gif)
