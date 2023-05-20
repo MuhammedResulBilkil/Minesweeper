@@ -1,7 +1,6 @@
 # Minesweeper
  
  Inspired By "The Coding Train - Coding Challenge: Minesweeper" 
- https://youtu.be/LFU5ZlrR21E
  [![The Coding Train - Coding Challenge: Minesweeper](https://img.youtube.com/vi/LFU5ZlrR21E/0.jpg)](https://youtu.be/LFU5ZlrR21E)
  
  
